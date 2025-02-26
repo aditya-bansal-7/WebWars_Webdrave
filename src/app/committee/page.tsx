@@ -293,11 +293,11 @@ const sections_data = [
       },
       {
         name: "Dr. Noor Zaman Jhanjhi",
-        designation: "Taylor's University, Malaysia",
+        designation: "Taylor&apos;s University, Malaysia",
       },
       {
         name: "Dr. Chaman Verma ",
-        designation: "Taylor's University, Malaysia",
+        designation: "Taylor&apos;s University, Malaysia",
       },
       {
         name: "Dr. Manoj Kumar",
@@ -520,7 +520,7 @@ const sections_data = [
       },
       {
         name: "Prof. Priya Matta",
-        designation: "SM-IEEE, Department of CSE, Tula's Institute, Dehradun, India",
+        designation: "SM-IEEE, Department of CSE, Tula&apos;s University, India",
       },
       {
         name: "Prof. Alok Katiyar",
@@ -674,7 +674,7 @@ const Page = () => {
 
             <div className="mt-6 md:mt-0 md:ml-12 text-center md:text-left">
               <h2 className="text-md md:text-xl lg:text-2xl font-bold mb-4 md:mb-6">SHRI SUNEEL GALGOTIA</h2>
-              <p className="text-gray-600 mb-2 text-xs md:text-base">HON'BLE CHANCELLOR</p>
+              <p className="text-gray-600 mb-2 text-xs md:text-base">HON&apos;BLE CHANCELLOR</p>
               <p className="text-gray-600 text-xs md:text-base">GALGOTIAS UNIVERSITY, INDIA</p>
             </div>
           </div>
