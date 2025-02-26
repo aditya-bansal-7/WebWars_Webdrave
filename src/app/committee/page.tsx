@@ -593,7 +593,7 @@ const sections = [
     label: "NATIONAL ADVISORY COMMITTEE",
   },
   { id: "Technical-Programme-Committee", label: "TECHNICAL PROGRAMME COMMITTEE" },
-];
+] as const;
 
 interface facultyMembers {
   name: string;
@@ -604,25 +604,28 @@ const Page = () => {
   const [activeSection, setActiveSection] = useState(sections[0].label);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleSection = entries.find((entry) => entry.isIntersecting);
-        if (visibleSection) {
-          const newActive = sections.find(
-            (sec) => sec.id === visibleSection.target.id
-          );
-          if (newActive) setActiveSection(newActive.label);
-        }
-      },
-      { threshold: 0.6 }
-    );
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      const visibleSection = entries.find((entry) => entry.isIntersecting);
+      if (visibleSection) {
+        const newActive = sections.find(
+          (sec) => sec.id === visibleSection.target.id
+        );
+        if (newActive) setActiveSection(newActive.label as "CHIEF PATRON");
+      }
+    };
 
-    sections.forEach(({ id }) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
+    const observer = new IntersectionObserver(observerCallback, { 
+      threshold: 0.6,
+      rootMargin: '0px'
     });
 
-    return () => observer.disconnect();
+    const elements = sections.map(({ id }) => document.getElementById(id)).filter(Boolean);
+    elements.forEach(element => observer.observe(element!));
+
+    return () => {
+      elements.forEach(element => observer.unobserve(element!));
+      observer.disconnect();
+    };
   }, []);
 
   return (
@@ -639,7 +642,7 @@ const Page = () => {
               transition={{ duration: 0.4 }}
               className="flex justify-center items-center h-24 w-full"
             >
-              <span className="text-black text-2xl font-bold italic mt-28 whitespace-nowrap transform -rotate-90">
+              <span className="text-black text-xl md:text-2xl font-bold italic mt-28 whitespace-nowrap transform -rotate-90">
                 {activeSection}
               </span>
             </motion.div>
@@ -648,41 +651,37 @@ const Page = () => {
       </div>
 
       {/* Conference Committee Header */}
-      <div className="mt-32 flex flex-col">
-        <h1 className="text-4xl md:text-5xl font-bold text-center">
-          Conference Committee
-        </h1>
+      <div className="mt-32 flex flex-col text-center">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Conference Committee</h1>
       </div>
 
       {/* Sections for Different Positions */}
       <Section id="Chief-Patron">
-        <div id="Chief-Patron" className="flex justify-center items-center">
+        <div id="Chief-Patron" className="flex justify-center ml-20 md:ml-0 items-center px-4">
           <div
-            className="flex items-center border rounded-3xl shadow-lg p-4 w-full max-w-2xl"
+            className="flex flex-col md:flex-row items-center border rounded-3xl shadow-lg p-4 w-full max-w-2xl"
             style={{
-              background:
-                "linear-gradient(101deg, #F8F9F8 1.3%, #C9DCEA 99.52%)",
+              background: "linear-gradient(101deg, #F8F9F8 1.3%, #C9DCEA 99.52%)",
             }}
           >
             <Image
               src="/assets/persons/sunilSir.jpeg"
               alt="Shri Suneel Galgotia"
-              width={208} // Adjust width
-              height={208} // Adjust height
-              className="h-52 rounded-3xl object-cover border border-gray-300"
+              width={208}
+              height={208}
+              className="h-40 w-40 md:h-52 md:w-52 rounded-3xl object-cover border border-gray-300"
             />
 
-            <div className="ml-12">
-              <h2 className="text-xl font-bold mb-6">SHRI SUNEEL GALGOTIA</h2>
-              <p className="text-gray-600 mb-2">HON&apos;BLE CHANCELLOR</p>
-              <p className="text-gray-600">GALGOTIAS UNIVERSITY, INDIA</p>
+            <div className="mt-6 md:mt-0 md:ml-12 text-center md:text-left">
+              <h2 className="text-md md:text-xl lg:text-2xl font-bold mb-4 md:mb-6">SHRI SUNEEL GALGOTIA</h2>
+              <p className="text-gray-600 mb-2 text-xs md:text-base">HON'BLE CHANCELLOR</p>
+              <p className="text-gray-600 text-xs md:text-base">GALGOTIAS UNIVERSITY, INDIA</p>
             </div>
           </div>
         </div>
       </Section>
-
       <Section id="Patron">
-        <div className="flex flex-col gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
           <PersonCard
             name="Prof.(Dr.) S.N. Singh"
             role="Director IIITM"
@@ -695,8 +694,6 @@ const Page = () => {
             location="Galgotias University, India"
             image="/assets/persons/vcsir.jpg"
           />
-        </div>
-        <div className="flex flex-col gap-10">
           <PersonCard
             name="Dr. Dhruv Galgotia"
             role="CEO"
@@ -713,25 +710,22 @@ const Page = () => {
       </Section>
 
       <Section id="Conference-General-Chair">
-        <div className="flex flex-col gap-10">
           <PersonCard
             name="Prof.(Dr.) Avadhesh Kumar"
             role="Pro-VC"
             location="Galgotias University, India"
             image="/assets/persons/pvcsir.jpg"
-          />
-        </div>
-        <div className="flex flex-col gap-10">
+          />        
           <PersonCard
             name="Dr. Yogesh S. Chauhan"
             role="Professor"
             location="Indian Institute of Technology Kanpur Kanpur, U.P., India"
             image="/assets/persons/yogesh1.png"
           />
-        </div>
       </Section>
+
       {sections_data.map((section, index) => (
-        <Section id={section.id} key={index}>
+        <Section id={section.id} key={index} animate={index < sections_data.length - 3}>
           <FacultyCard facultyMembers={section.facultyData} />
         </Section>
       ))}
@@ -740,43 +734,50 @@ const Page = () => {
 };
 
 // Section Wrapper with Framer Motion
-const Section: React.FC<{ id: string; children: React.ReactNode }> = ({
+const Section: React.FC<{ id: string; children: React.ReactNode; animate?: boolean }> = ({
   id,
   children,
+  animate = true,
 }) => {
-  return (
-    <motion.div
-      id={id}
-      className="flex justify-center items-center gap-10 min-h-[50vh]"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: false, amount: 0.4 }}
-    >
-      {children}
-    </motion.div>
-  );
+  const commonProps = {
+    id,
+    className: "flex justify-center items-center flex-col lg:flex-row gap-10 min-h-[50vh]"
+  };
+
+  if (animate) {
+    return (
+      <motion.div
+        {...commonProps}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: false, amount: 0.4 }}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
+  return <div {...commonProps}>{children}</div>;
 };
 const FacultyCard = ({ facultyMembers }: { facultyMembers: facultyMembers[] }) => {
   return (
-    <div className="relative min-h-[400px] w-full p-8">
+    <div className="flex md:w-full ml-24 p-2 sm:p-4">
       {/* Checkerboard pattern container */}
       <div className="absolute inset-0 opacity-90" />
 
       {/* Content container */}
       <div
-        className="relative mx-auto max-w-3xl rounded-3xl p-12 shadow-xl"
+        className="relative mx-auto max-w-2xl rounded-2xl p-4 sm:p-6 shadow-lg"
         style={{
           background: "linear-gradient(101deg, #F8F9F8 1.3%, #C9DCEA 99.52%)",
         }}
       >
-        <div className="space-y-8">
+        <div className="space-y-4 sm:space-y-6">
           {facultyMembers.map((faculty, index) => (
-            <div key={index} className="space-y-4 text-center">
-              <h2 className="text-2xl font-bold tracking-wide">
-                {faculty.name}
-              </h2>
-              <p className="text-lg tracking-wider">{faculty.designation}</p>
+            <div key={index} className="space-y-2 sm:space-y-3 text-center">
+              <h2 className="text-sm sm:text-xl font-bold tracking-wide">{faculty.name}</h2>
+              <p className="text-xs sm:text-base tracking-wider">{faculty.designation}</p>
               {index !== facultyMembers.length - 1 && (
                 <hr className="border-gray-300" />
               )}
@@ -787,7 +788,7 @@ const FacultyCard = ({ facultyMembers }: { facultyMembers: facultyMembers[] }) =
     </div>
   );
 };
-// PersonCard Component
+
 const PersonCard: React.FC<{
   name: string;
   role: string;
@@ -796,14 +797,14 @@ const PersonCard: React.FC<{
 }> = ({ name, role, image, location }) => {
   return (
     <motion.div
-      className="flex flex-col items-center border rounded-3xl shadow-lg p-6 w-[20rem] h-[24rem] bg-white"
+      className="flex flex-col items-center border rounded-3xl shadow-lg p-4 ml-16 max-w-[70vw] w-[13rem] sm:w-[18rem] lg:w-[20rem] h-auto bg-white"
       style={{
         background: "linear-gradient(101deg, #F8F9F8 1.3%, #C9DCEA 99.52%)",
       }}
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 100 }}
     >
-      <div className="w-48 h-48 mb-10 overflow-hidden rounded-full border-4 border-white shadow-md ">
+      <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mb-6 overflow-hidden rounded-full border-4 border-white shadow-md">
         <Image
           src={image}
           alt={name}
@@ -813,11 +814,13 @@ const PersonCard: React.FC<{
         />
       </div>
       <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">{name}</h2>
-        <p className="text-gray-700 font-medium mb-1">{role}</p>
-        {location && <p className="text-gray-600">{location}</p>}
+        <h2 className="text-lg sm:text-xl font-bold mb-2">{name}</h2>
+        <p className="text-gray-700 text-sm sm:text-base font-medium mb-1">{role}</p>
+        {location && <p className="text-gray-600 text-sm sm:text-base">{location}</p>}
       </div>
     </motion.div>
   );
 };
+
+
 export default Page;
