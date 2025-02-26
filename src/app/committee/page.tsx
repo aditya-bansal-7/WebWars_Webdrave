@@ -595,6 +595,11 @@ const sections = [
   { id: "Technical-Programme-Committee", label: "TECHNICAL PROGRAMME COMMITTEE" },
 ];
 
+interface facultyMembers {
+  name: string;
+  designation: string;
+}
+
 const Page = () => {
   const [activeSection, setActiveSection] = useState(sections[0].label);
 
@@ -752,7 +757,7 @@ const Section: React.FC<{ id: string; children: React.ReactNode }> = ({
     </motion.div>
   );
 };
-const FacultyCard = ({ facultyMembers }: { facultyMembers: any[] }) => {
+const FacultyCard = ({ facultyMembers }: { facultyMembers: facultyMembers[] }) => {
   return (
     <div className="relative min-h-[400px] w-full p-8">
       {/* Checkerboard pattern container */}
